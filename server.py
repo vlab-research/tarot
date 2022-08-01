@@ -1,8 +1,7 @@
 import json
-from dataclasses import dataclass
+import os
 from enum import Enum
 from functools import cache
-from random import randint
 from typing import Any, Optional
 
 import psycopg
@@ -10,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from psycopg_pool import ConnectionPool
 from pydantic.dataclasses import dataclass
 
-from db import execute, insert_optional_query, manyify, query
+from db import insert_optional_query, manyify, query
 from treatment_assignment import (TreatmentAssignment,
                                   TreatmentAssignmentRequest, assign)
 
@@ -34,12 +33,18 @@ class Study:
 
 @cache
 def get_pool():
-    conninfo = "postgresql://root@localhost:5434/sorting_hat"
+    conninfo = os.environ["DB_CONN_INFO"]
+    # conninfo = "postgresql://root@localhost:5434/sorting_hat"
     pool = ConnectionPool(conninfo)
     return pool
 
 
 pool = get_pool()
+
+
+@app.get("/health")
+def health():
+    return "OK"
 
 
 @app.post("/studies", status_code=201)

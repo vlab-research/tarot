@@ -4,12 +4,12 @@ from typing import TypeVar
 import psycopg
 
 
-def _connect(cnf):
-    return cnf.connection()
+def _connect(pool):
+    return pool.connection()
 
 
-def query(cnf, q, vals=(), as_dict=False):
-    with _connect(cnf) as conn:
+def query(pool, q, vals=(), as_dict=False):
+    with _connect(pool) as conn:
         with conn.cursor() as cur:
             cur.execute(q, vals)
 
@@ -22,8 +22,8 @@ def query(cnf, q, vals=(), as_dict=False):
                     yield record
 
 
-def execute(cnf, q, vals=()):
-    with _connect(cnf) as conn:
+def execute(pool, q, vals=()):
+    with _connect(pool) as conn:
         with conn.cursor() as cur:
             cur.execute(q, vals)
 
@@ -43,16 +43,16 @@ def manyify(q, vals):
     return q, vals
 
 
-def execute_many(cnf, q, vals_list):
-    with _connect(cnf) as conn:
+def execute_many(pool, q, vals_list):
+    with _connect(pool) as conn:
         with conn.cursor() as cur:
             for vals in vals_list:
                 cur.execute(q, vals)
 
 
-def copy(cnf, table, vals):
+def copy(pool, table, vals):
     print(table)
-    with _connect(cnf) as conn:
+    with _connect(pool) as conn:
         with conn.cursor() as cur:
             with cur.copy(f"COPY {table} FROM STDIN") as copy:
                 for record in vals:
